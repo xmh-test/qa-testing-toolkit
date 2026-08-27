@@ -1,0 +1,20 @@
+{
+  "name": "qa-testing-toolkit",
+  "interface": {
+    "displayName": "QA Testing Toolkit"
+  },
+  "plugins": [
+    {
+      "name": "qa-testing-toolkit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/qa-testing-toolkit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

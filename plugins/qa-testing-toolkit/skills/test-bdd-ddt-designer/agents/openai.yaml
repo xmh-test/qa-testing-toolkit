@@ -1,0 +1,4 @@
+interface:
+  display_name: "BDD/DDT 测试设计器"
+  short_description: "聚合业务旅程，设计完整独立的BDD与DDT用例"
+  default_prompt: "使用 $test-bdd-ddt-designer 先从需求与功能点聚合业务旅程，再生成不过度碎片化、可独立执行的 BDD 与 DDT 专项资产。"
