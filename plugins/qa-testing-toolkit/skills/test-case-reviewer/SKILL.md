@@ -54,7 +54,7 @@ python3 scripts/validate_test_artifacts.py <测试用例JSON> --all-linked
 
 ## 标题、优先级、平台与去重
 
-- 仅常规原子用例要求标题表达模块/场景、核心动作和结果，并按其生成规范检查方括号结构。
+- 仅常规原子用例要求标题表达模块/场景、核心动作和结果，并检查两个标题分段均使用中文全角方括号 `【】`，不得使用半角方括号 `[]`。
 - 含 BDD/DDT 的专项模板按下述专项标题规则评审，不得因未使用常规原子标题格式而判为缺陷。
 - P0 只用于核心主链路。
 - `directory`、`functional_module`、平台 tags 和 `destructive` 合规。
@@ -78,7 +78,7 @@ python3 scripts/validate_test_artifacts.py <测试用例JSON> --all-linked
 - 已知边界按适用性覆盖 min-1/min/max/max+1，未知边界进入需求缺口。
 - DDT 分类完整性以独立 DDT JSON 为准；row 不要求对应不同 JSON cases。
 - BDD+DDT 的 Feature Examples 与 DDT rows、覆盖关系一致。
-- 纯 DDT 模板标题应表达“业务对象 + 数据分类/参数维度 + 校验目标或结果”，不要求常规原子用例的方括号格式，也不枚举 rows；BDD+DDT 标题改按 BDD 规则并与 Outline 标题一致。
+- 纯 DDT 模板标题应表达“业务对象 + 数据分类/参数维度 + 校验目标或结果”，不要求常规原子用例的中文全角方括号格式，也不枚举 rows；BDD+DDT 标题改按 BDD 规则并与 Outline 标题一致。
 - 数据集未关联模板用例、一个 dataset 关联多个模板、错误 full 或无法解析均为严重缺陷。
 - 继续兼容旧 DDT V1 按 row 展开的映射，但不以旧模型要求新 V2。
 
