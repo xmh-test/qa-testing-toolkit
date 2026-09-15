@@ -119,7 +119,7 @@ description: 基于需求、功能点或常规 JSON V2，先聚合业务旅程�
 
 ## 专项模板标题
 
-- 仅 `design_methods=["functional-point"]` 的常规原子用例沿用 `【模块/功能点】【前置条件/场景】核心动作，预期结果`，并使用中文全角方括号 `【】`。
+- 仅 `design_methods=["functional-point"]` 的常规原子用例沿用 `【功能分类】【场景摘要】核心操作，预期结果`。功能分类是稳定、适度宽泛的归类标签，同一区域应复用，不按按钮、操作、字段或校验项过度细分；场景摘要描述关键条件、环境或业务场景。
 - 含 `bdd` 或 `ddt` 的专项模板不强制使用常规原子用例标题格式，按 `references/bdd_profile.md` 和 `references/ddt_profile.md` 使用自然中文标题。
 - 普通 BDD 标题表达“角色 + 完整业务动作链 + 最终业务结果”；Scenario Outline 或 BDD+DDT 标题表达“角色 + 参数化输入/动作 + 业务目标”，不在标题枚举各数据行结果。
 - BDD 与 BDD+DDT 的 JSON `title` 必须与关联 Feature 中的 Scenario/Scenario Outline 标题逐字一致，避免跨文件语义漂移。

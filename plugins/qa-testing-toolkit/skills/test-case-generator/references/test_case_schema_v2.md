@@ -36,7 +36,7 @@
 | `bdd_scenario_id` | null | 固定 null |
 | `ddt_dataset_ids` | string[] | 固定空数组 |
 | `ddt_row_id` | null | 固定 null |
-| `title` | string | `【模块/功能点】【前置条件/场景】核心动作，预期结果`；必须使用中文全角方括号 `【】` |
+| `title` | string | `【功能分类】【场景摘要】核心操作，预期结果`；功能分类保持稳定且不过度细分，场景摘要描述关键条件、环境或业务场景，正文用中文逗号分隔操作与结果 |
 | `directory` | string | `项目名|平台分类|模块名` |
 | `tags` | string[] | 平台与可选 destructive |
 | `priority` | string | P0/P1/P2 |

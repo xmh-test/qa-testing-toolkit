@@ -1,6 +1,6 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "需求分析、测试计划、功能用例、BDD/DDT、用例评审与 Excel 导出工具集。",
   "author": {
     "name": "Xu Minghong",
