@@ -6,8 +6,8 @@
 
 | Skill | 用途 |
 | --- | --- |
-| `requirements-analyst` | 分析 PRD 和需求，输出可追溯的测试设计输入与需求缺口 |
-| `ui-test-designer` | 仅有 Figma/HTML 设计稿时，提取测试功能和证据，衔接常规用例生成 |
+| `test-requirements-analyst` | 分析 PRD 和需求，输出可追溯的测试设计输入与需求缺口 |
+| `test-ui-designer` | 仅有 Figma/HTML 设计稿时，提取测试功能和证据，衔接常规用例生成 |
 | `test-plan` | 生成或更新结构化测试计划 |
 | `test-case-generator` | 生成或更新 JSON V3 常规测试用例及总结 |
 | `test-case-reviewer` | 评审用例结构、覆盖、可执行性及业务规则依据 |
@@ -31,7 +31,11 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
-## 0.3.1：UI 功能测试设计
+## 0.3.2：统一技能命名
+
+全部技能名称和目录统一以 `test-` 开头。需求分析使用 `test-requirements-analyst`，UI 设计分析使用 `test-ui-designer`。显式调用请使用新名称；其余技能名称和功能保持不变。
+
+## UI 功能测试设计
 
 使用示例：“没有 PRD，请根据这些 Figma 页面（或 HTML 原型）提取测试功能，编写测试用例并导出 Excel。”
 

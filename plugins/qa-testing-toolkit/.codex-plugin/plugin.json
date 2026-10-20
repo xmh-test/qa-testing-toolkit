@@ -1,6 +1,6 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "需求与 UI 设计分析、测试计划、常规测试用例、质量评审及 Excel 导出工具集。",
   "author": {
     "name": "Xu Minghong",

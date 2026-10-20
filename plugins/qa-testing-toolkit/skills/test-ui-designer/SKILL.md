@@ -1,5 +1,5 @@
 ---
-name: ui-test-designer
+name: test-ui-designer
 description: 没有 PRD、仅有 Figma 或 HTML 设计稿时，提取可追溯的测试功能、状态与交互依据，并组织生成测试用例。用于测试设计，不用于执行程序或判定界面还原度。
 ---
 

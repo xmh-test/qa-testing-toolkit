@@ -1,5 +1,5 @@
 ---
-name: requirements-analyst
+name: test-requirements-analyst
 description: 分析产品需求或 PRD，输出可追溯的需求、验收标准、功能点和分级需求缺口，为测试设计提供依据。
 ---
 
