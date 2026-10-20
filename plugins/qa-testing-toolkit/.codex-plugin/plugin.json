@@ -1,7 +1,7 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.1.2",
-  "description": "需求分析、测试计划、功能用例、BDD/DDT、用例评审与 Excel 导出工具集。",
+  "version": "0.2.0",
+  "description": "需求分析、测试计划、常规测试用例、质量评审与 Excel 导出工具集。",
   "author": {
     "name": "Xu Minghong",
     "email": "xuminghong@miniscloud.com"
@@ -10,15 +10,13 @@
     "requirements-analysis",
     "test-plan",
     "test-case",
-    "bdd",
-    "ddt",
     "qa"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "QA Testing Toolkit",
     "shortDescription": "需求分析与测试设计全流程工具集",
-    "longDescription": "提供需求分析、测试计划、常规功能用例、BDD/DDT 专项设计、测试用例评审及 Excel 导出能力。",
+    "longDescription": "提供需求分析、测试计划、常规用例生成与更新、结构校验、语义评审及 Excel 导出能力。",
     "developerName": "Xu Minghong",
     "category": "Productivity",
     "capabilities": [
@@ -27,7 +25,7 @@
     ],
     "defaultPrompt": [
       "分析产品需求并输出可追溯的测试设计输入。",
-      "基于需求生成常规功能用例，并补充 BDD/DDT 专项资产。",
+      "基于需求生成可执行、可追溯的测试用例并检查格式与覆盖。",
       "评审测试用例，或将 JSON 测试用例导出为 Excel。"
     ]
   }

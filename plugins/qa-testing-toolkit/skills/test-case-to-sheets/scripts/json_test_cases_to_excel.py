@@ -23,6 +23,11 @@ from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree as ET
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "test-case-generator" / "scripts"))
+from test_case_contract import load_document
 
 
 BASE_COLUMNS = [
@@ -38,29 +43,18 @@ BASE_COLUMNS = [
     ("功能模块", "functional_module"),
 ]
 
-V2_COLUMNS = [
+TRACE_COLUMNS = [
     ("用例ID", "case_id"),
     ("需求编号", "requirement_ids"),
     ("验收标准编号", "acceptance_criteria_ids"),
     ("功能点编号", "functional_point_id"),
-    ("设计方法", "design_methods"),
-    ("BDD场景ID", "bdd_scenario_id"),
-    ("DDT数据集ID", "ddt_dataset_ids"),
-    ("DDT数据行ID", "ddt_row_id"),
-    ("资产类型", "__asset_type__"),
-    ("覆盖关系", "__coverage__"),
-    ("执行建议", "__execution_advice__"),
 ]
-
 BASE_COLUMN_WIDTHS = [8, 44, 24, 22, 10, 18, 42, 48, 54, 18]
-V2_COLUMN_WIDTHS = [20, 20, 20, 16, 24, 22, 24, 28, 18, 42, 24]
-PIPE_LIST_FIELDS = {
-    "tags", "requirement_ids", "acceptance_criteria_ids",
-    "design_methods", "ddt_dataset_ids",
-}
+TRACE_COLUMN_WIDTHS = [20, 20, 20, 16]
+PIPE_LIST_FIELDS = {"tags", "requirement_ids", "acceptance_criteria_ids"}
 PRIORITY_STYLES = {"P0": 2, "P1": 3, "P2": 4}
 INVALID_XML_RE = re.compile(
-    r"[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD]",
+    r"[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\U00010000-\U0010FFFF]",
 )
 
 
@@ -79,236 +73,7 @@ def parse_args() -> argparse.Namespace:
         default="测试用例",
         help="工作表名称，默认：测试用例",
     )
-    parser.add_argument(
-        "--exclude-covered-atomic",
-        action="store_true",
-        help="排除被 BDD/DDT 完整覆盖且未被部分覆盖的常规原子用例",
-    )
-    parser.add_argument("--feature", help="显式指定覆盖关系来源的 BDD .feature 文件")
-    parser.add_argument("--ddt", help="显式指定覆盖关系来源的 DDT JSON 文件")
     return parser.parse_args()
-
-
-def load_case_bundle(
-    json_path: Path,
-) -> tuple[list[dict[str, Any]], bool, dict[str, Any] | None]:
-    with json_path.open("r", encoding="utf-8") as file:
-        payload = json.load(file)
-
-    is_v2 = False
-    metadata: dict[str, Any] | None = None
-    if isinstance(payload, list):
-        cases = payload
-    elif isinstance(payload, dict):
-        is_v2 = payload.get("schema_version") == "2.0"
-        raw_metadata = payload.get("metadata")
-        metadata = raw_metadata if isinstance(raw_metadata, dict) else None
-        cases = None
-        for key in ("cases", "test_cases", "items", "data", "rows"):
-            value = payload.get(key)
-            if isinstance(value, list):
-                cases = value
-                break
-        if cases is None:
-            raise ValueError(
-                "JSON 根对象不是数组，也未找到 cases/test_cases/items/data/rows 数组字段",
-            )
-    else:
-        raise ValueError("JSON 根节点必须是数组或对象")
-
-    normalized: list[dict[str, Any]] = []
-    for index, item in enumerate(cases, start=1):
-        if not isinstance(item, dict):
-            raise ValueError(f"第 {index} 条用例不是 JSON 对象")
-        normalized.append(item)
-    return normalized, is_v2, metadata
-
-
-def load_case_document(json_path: Path) -> tuple[list[dict[str, Any]], bool]:
-    """Backward-compatible helper returning cases and the V2 flag."""
-    cases, is_v2, _ = load_case_bundle(json_path)
-    return cases, is_v2
-
-
-def load_cases(json_path: Path) -> list[dict[str, Any]]:
-    """Backward-compatible helper returning only the case list."""
-    cases, _ = load_case_document(json_path)
-    return cases
-
-
-def resolve_artifact_path(
-    base: Path,
-    explicit: str | None,
-    metadata: dict[str, Any] | None,
-    key: str,
-) -> tuple[Path | None, bool]:
-    """Return artifact path and whether it was explicitly selected."""
-    if explicit:
-        value = Path(explicit).expanduser()
-        return (value.resolve() if value.is_absolute() else (Path.cwd() / value).resolve()), True
-    artifacts = metadata.get("artifacts") if isinstance(metadata, dict) else None
-    value = artifacts.get(key) if isinstance(artifacts, dict) else None
-    if value is None:
-        return None, False
-    if not isinstance(value, str) or not value:
-        raise ValueError(f"metadata.artifacts.{key} 必须是非空路径或 null")
-    path = Path(value).expanduser()
-    return (path.resolve() if path.is_absolute() else (base / path).resolve()), False
-
-
-def add_relation(
-    relations: dict[str, dict[str, set[str]]],
-    case_id: str,
-    level: str,
-    source: str,
-) -> None:
-    relations.setdefault(case_id, {"full": set(), "partial": set()})[level].add(source)
-
-
-def parse_feature_coverage(path: Path) -> dict[str, dict[str, set[str]]]:
-    text = path.read_text(encoding="utf-8")
-    if not re.search(r"^\s*Feature:\s+.+", text, re.MULTILINE):
-        raise ValueError(f"Feature 无法解析或缺少 Feature 声明：{path}")
-    relations: dict[str, dict[str, set[str]]] = {}
-    blocks = re.finditer(
-        r"(?P<tags>(?:^\s*@[^\n]+\n)+)^\s*Scenario(?: Outline)?:\s+.+",
-        text,
-        re.MULTILINE,
-    )
-    found = False
-    for match in blocks:
-        found = True
-        tags = set(re.findall(r"@([^\s]+)", match.group("tags")))
-        bdd_ids = sorted(tag for tag in tags if re.fullmatch(r"BDD-FP\d{3,}-\d{3,}", tag))
-        source = bdd_ids[0] if bdd_ids else path.name
-        for tag in tags:
-            if tag.startswith("covers-full-"):
-                add_relation(relations, tag.removeprefix("covers-full-"), "full", source)
-            elif tag.startswith("covers-partial-"):
-                add_relation(relations, tag.removeprefix("covers-partial-"), "partial", source)
-    if not found:
-        raise ValueError(f"Feature 中未找到带标签的 Scenario：{path}")
-    return relations
-
-
-def parse_ddt_coverage(path: Path) -> dict[str, dict[str, set[str]]]:
-    with path.open("r", encoding="utf-8") as file:
-        payload = json.load(file)
-    if not isinstance(payload, dict):
-        raise ValueError(f"DDT JSON 根节点必须是对象：{path}")
-    version = payload.get("schema_version")
-    if version == "1.0":
-        return {}
-    if version != "2.0":
-        raise ValueError(f"不支持的 DDT schema_version：{version}")
-    datasets = payload.get("datasets")
-    if not isinstance(datasets, list):
-        raise ValueError(f"DDT datasets 必须是数组：{path}")
-    relations: dict[str, dict[str, set[str]]] = {}
-    for index, dataset in enumerate(datasets, 1):
-        if not isinstance(dataset, dict):
-            raise ValueError(f"DDT 第 {index} 个 dataset 不是对象")
-        dataset_id = dataset.get("dataset_id")
-        if not isinstance(dataset_id, str) or not dataset_id:
-            raise ValueError(f"DDT 第 {index} 个 dataset_id 缺失")
-        coverage = dataset.get("coverage")
-        if not isinstance(coverage, dict):
-            raise ValueError(f"{dataset_id}.coverage 缺失")
-        full = coverage.get("full_case_ids")
-        partial = coverage.get("partial_case_ids")
-        if not isinstance(full, list) or not isinstance(partial, list):
-            raise ValueError(f"{dataset_id} 的 full_case_ids/partial_case_ids 必须是数组")
-        if any(not isinstance(value, str) or not value for value in full + partial):
-            raise ValueError(f"{dataset_id} 的 coverage 包含无效 case ID")
-        for case_id in full:
-            add_relation(relations, case_id, "full", dataset_id)
-        for case_id in partial:
-            add_relation(relations, case_id, "partial", dataset_id)
-    return relations
-
-
-def merge_relations(
-    *sources: dict[str, dict[str, set[str]]],
-) -> dict[str, dict[str, set[str]]]:
-    merged: dict[str, dict[str, set[str]]] = {}
-    for source in sources:
-        for case_id, levels in source.items():
-            for level in ("full", "partial"):
-                for origin in levels[level]:
-                    add_relation(merged, case_id, level, origin)
-    return merged
-
-
-def validate_filter_relations(
-    cases: list[dict[str, Any]],
-    relations: dict[str, dict[str, set[str]]],
-) -> None:
-    case_map: dict[str, dict[str, Any]] = {}
-    for index, case in enumerate(cases, 1):
-        case_id = case.get("case_id")
-        if not isinstance(case_id, str) or not case_id:
-            raise ValueError(f"第 {index} 条 V2 用例缺少稳定 case_id，不能覆盖过滤")
-        if case_id in case_map:
-            raise ValueError(f"case_id 重复，不能覆盖过滤：{case_id}")
-        case_map[case_id] = case
-    unknown = set(relations) - set(case_map)
-    if unknown:
-        raise ValueError(f"覆盖关系引用未知 case ID：{'|'.join(sorted(unknown))}")
-    conflicts = {
-        case_id for case_id, levels in relations.items()
-        if levels["full"] and levels["partial"]
-    }
-    if conflicts:
-        raise ValueError(f"同一 case 同时被 full 和 partial 覆盖：{'|'.join(sorted(conflicts))}")
-    invalid_full = {
-        case_id for case_id, levels in relations.items()
-        if levels["full"] and case_map[case_id].get("design_methods") != ["functional-point"]
-    }
-    if invalid_full:
-        raise ValueError(f"full 覆盖指向 BDD/DDT 模板用例：{'|'.join(sorted(invalid_full))}")
-
-
-def asset_type(case: dict[str, Any]) -> str:
-    methods = case.get("design_methods")
-    if methods == ["functional-point"]:
-        return "常规原子用例"
-    method_set = set(methods) if isinstance(methods, list) else set()
-    if {"bdd", "ddt"} <= method_set:
-        return "BDD+DDT参数化流程"
-    if "bdd" in method_set:
-        return "BDD完整流程"
-    if "ddt" in method_set:
-        return "DDT模板"
-    return "常规用例"
-
-
-def decorate_cases(
-    cases: list[dict[str, Any]],
-    relations: dict[str, dict[str, set[str]]],
-) -> list[dict[str, Any]]:
-    decorated: list[dict[str, Any]] = []
-    for case in cases:
-        copy = dict(case)
-        levels = relations.get(str(case.get("case_id")), {"full": set(), "partial": set()})
-        full_sources = sorted(levels["full"])
-        partial_sources = sorted(levels["partial"])
-        relation_parts: list[str] = []
-        if full_sources:
-            relation_parts.append(f"完整覆盖:{'|'.join(full_sources)}")
-        if partial_sources:
-            relation_parts.append(f"部分覆盖:{'|'.join(partial_sources)}")
-        copy["__asset_type__"] = asset_type(case)
-        copy["__coverage__"] = "；".join(relation_parts)
-        if case.get("design_methods") != ["functional-point"]:
-            copy["__execution_advice__"] = "专项用例，执行"
-        elif partial_sources:
-            copy["__execution_advice__"] = "部分覆盖，仍需执行"
-        elif full_sources:
-            copy["__execution_advice__"] = "已被完整覆盖，可跳过"
-        else:
-            copy["__execution_advice__"] = "执行"
-        decorated.append(copy)
-    return decorated
 
 
 def column_name(index: int) -> str:
@@ -332,7 +97,11 @@ def clean_text(value: Any) -> str:
         text = json.dumps(value, ensure_ascii=False)
     else:
         text = str(value)
-    return INVALID_XML_RE.sub("", text)
+    if INVALID_XML_RE.search(text):
+        raise ValueError("单元格包含 XML 不支持的字符，不能静默删除")
+    if len(text.encode("utf-16-le")) // 2 > 32767:
+        raise ValueError("单元格超出 Excel 32767 字符限制")
+    return text
 
 
 def normalize_cell_value(key: str, value: Any) -> Any:
@@ -342,7 +111,7 @@ def normalize_cell_value(key: str, value: Any) -> Any:
 
 
 def xml_text(value: Any) -> str:
-    return escape(clean_text(value), quote=False)
+    return escape(clean_text(value), quote=False).replace("\r", "&#13;")
 
 
 def safe_sheet_name(name: str) -> str:
@@ -581,12 +350,12 @@ def write_xlsx(
     output_path: Path,
     sheet_name: str,
     *,
-    is_v2: bool = False,
+    with_trace: bool = False,
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     sheet_name = safe_sheet_name(sheet_name)
-    columns = BASE_COLUMNS + V2_COLUMNS if is_v2 else BASE_COLUMNS
-    column_widths = BASE_COLUMN_WIDTHS + V2_COLUMN_WIDTHS if is_v2 else BASE_COLUMN_WIDTHS
+    columns = BASE_COLUMNS + TRACE_COLUMNS if with_trace else BASE_COLUMNS
+    column_widths = BASE_COLUMN_WIDTHS + TRACE_COLUMN_WIDTHS if with_trace else BASE_COLUMN_WIDTHS
 
     with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("[Content_Types].xml", content_types_xml())
@@ -602,87 +371,64 @@ def write_xlsx(
         )
 
 
+def verify_xlsx(path: Path, cases: list[dict[str, Any]], with_trace: bool) -> None:
+    columns = BASE_COLUMNS + TRACE_COLUMNS if with_trace else BASE_COLUMNS
+    ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    with zipfile.ZipFile(path) as archive:
+        if archive.testzip() is not None:
+            raise ValueError("Excel ZIP 校验失败")
+        for name in archive.namelist():
+            if name.endswith((".xml", ".rels")):
+                ET.fromstring(archive.read(name))
+        root = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+    rows = root.findall("s:sheetData/s:row", ns)
+    if len(rows) != len(cases) + 1:
+        raise ValueError("Excel 行数与输入不一致")
+    for index, row in enumerate(rows):
+        cells = row.findall("s:c", ns)
+        if len(cells) != len(columns):
+            raise ValueError("Excel 列数与协议不一致")
+        values = ["".join(cell.itertext()) for cell in cells]
+        if index == 0:
+            expected = [header for header, _ in columns]
+        else:
+            case = cases[index - 1]
+            expected = [
+                clean_text(index if key == "__index__" else normalize_cell_value(key, case[key]))
+                for _, key in columns
+            ]
+        if values != expected:
+            raise ValueError(f"Excel 第 {index + 1} 行与输入内容不一致")
+
+
 def main() -> int:
     args = parse_args()
     json_path = Path(args.json_file).expanduser().resolve()
-    if not json_path.exists():
-        print(f"JSON 文件不存在：{json_path}", file=sys.stderr)
-        return 1
-
-    output_path = (
-        Path(args.output).expanduser().resolve()
-        if args.output
-        else json_path.with_suffix(".xlsx")
-    )
-
+    output_path = Path(args.output).expanduser().resolve() if args.output else json_path.with_suffix(".xlsx")
     temp_path: Path | None = None
     try:
-        cases, is_v2, metadata = load_case_bundle(json_path)
-        if args.exclude_covered_atomic and not is_v2:
-            raise ValueError("V1 没有稳定 case ID，不支持 --exclude-covered-atomic")
-
-        feature_path, feature_explicit = resolve_artifact_path(
-            json_path.parent, args.feature, metadata, "bdd",
-        )
-        ddt_path, ddt_explicit = resolve_artifact_path(
-            json_path.parent, args.ddt, metadata, "ddt",
-        )
-        relation_sources: list[dict[str, dict[str, set[str]]]] = []
-        for path, explicit, kind, loader in (
-            (feature_path, feature_explicit, "Feature", parse_feature_coverage),
-            (ddt_path, ddt_explicit, "DDT", parse_ddt_coverage),
-        ):
-            if path is None:
-                continue
-            strict = args.exclude_covered_atomic or explicit
-            try:
-                if not path.exists():
-                    raise ValueError(f"{kind} 文件不存在：{path}")
-                relation_sources.append(loader(path))
-            except Exception as exc:  # noqa: BLE001 - strict mode converts to CLI error.
-                if strict:
-                    raise ValueError(f"{kind} 覆盖关系读取失败：{exc}") from exc
-                print(f"警告：忽略无法读取的 {kind} 覆盖关系：{exc}", file=sys.stderr)
-
-        relations = merge_relations(*relation_sources)
-        if args.exclude_covered_atomic:
-            validate_filter_relations(cases, relations)
-
-        total = len(cases)
-        filtered: list[dict[str, Any]] = []
-        excluded = 0
-        for case in cases:
-            levels = relations.get(str(case.get("case_id")), {"full": set(), "partial": set()})
-            should_exclude = (
-                args.exclude_covered_atomic
-                and case.get("design_methods") == ["functional-point"]
-                and bool(levels["full"])
-                and not levels["partial"]
-            )
-            if should_exclude:
-                excluded += 1
-            else:
-                filtered.append(case)
-
-        decorated = decorate_cases(filtered, relations) if is_v2 else filtered
+        if output_path == json_path or output_path.suffix.lower() != ".xlsx":
+            raise ValueError("输出必须是独立的 .xlsx 文件，不能覆盖 JSON")
+        cases, version, warnings = load_document(json_path)
+        for warning in warnings:
+            print(f"警告：{warning}")
+        with_trace = version != "1.0"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(
-            prefix=f".{output_path.name}.",
-            suffix=".tmp",
-            dir=output_path.parent,
-            delete=False,
+            prefix=f".{output_path.name}.", suffix=".tmp",
+            dir=output_path.parent, delete=False,
         ) as temp_file:
             temp_path = Path(temp_file.name)
-        write_xlsx(decorated, temp_path, args.sheet_name, is_v2=is_v2)
+        write_xlsx(cases, temp_path, args.sheet_name, with_trace=with_trace)
+        verify_xlsx(temp_path, cases, with_trace)
         os.replace(temp_path, output_path)
         temp_path = None
-    except Exception as exc:  # noqa: BLE001 - CLI should print concise errors.
+    except Exception as exc:
         if temp_path is not None:
             temp_path.unlink(missing_ok=True)
         print(f"转换失败：{exc}", file=sys.stderr)
         return 1
-
-    print(f"转换完成：总用例 {total}，排除完整覆盖原子用例 {excluded}，导出 {len(filtered)}。")
+    print(f"转换完成：输入 {len(cases)} 条，导出 {len(cases)} 条；结构和单元格内容检查通过。")
     print(f"输出文件：{output_path}")
     return 0
 
