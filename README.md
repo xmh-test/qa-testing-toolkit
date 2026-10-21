@@ -9,7 +9,7 @@
 | `test-requirements-analyst` | 分析 PRD 和需求，输出可追溯的测试设计输入与需求缺口 |
 | `test-ui-designer` | 仅有 Figma/HTML 设计稿时，提取测试功能和证据，衔接常规用例生成 |
 | `test-plan` | 生成或更新结构化测试计划 |
-| `test-case-generator` | 生成或更新 JSON V3 常规测试用例及总结 |
+| `test-case-generator` | 通用用例设计，按上下文引用场景扩展，生成或更新 JSON V3 及总结 |
 | `test-case-reviewer` | 评审用例结构、覆盖、可执行性及业务规则依据 |
 | `test-case-to-sheets` | 将测试用例 JSON 转换为本地 Excel 文件 |
 
@@ -30,6 +30,23 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 安装后请新建一个 Codex 任务，让新任务加载插件中的 skills。
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
+
+## 0.5.0：通用设计与按需场景扩展
+
+`test-case-generator` 仍是统一入口，标题、粒度、追溯、确认与V3协议不变。先区分产品、运行平台、架构和能力，读取[扩展入口](plugins/qa-testing-toolkit/skills/test-case-generator/references/extensions/index.md)，再仅读取适用文档；不是为每个产品另建skill，也不一次加载所有专项。
+
+| 扩展维度 | 当前提供 |
+|---|---|
+| 产品 | NAS设备、数据及网络/服务路径 |
+| 平台 | 移动端（后台、熄屏、回收、网络及触控）、Web、独立桌面客户端 |
+| 架构 | C/S与设备/云协作、受理/回执/任务及数据归属 |
+| 能力 | 身份/多用户/并发；部署/依赖/版本 |
+
+这些可组合使用，未知能力先确认。例如NAS手机端可结合NAS、移动和已知的C/S，再按账号与部署能力选择相应扩展；离线单用户Web工具只用实际适用项。扩展是风险设计参考，不是产品需求、固定阈值或执行授权。项目规则留在项目依据，不写入公开通用文档。
+
+逐功能检查操作时序、已有/残留资源、具体故障路径、身份变化和恢复后续操作，避免只按页面生成或用一条笼统失败代替多种机制。记录扩展风险到FP/用例/候选的处置；需求内未知策略、范围未知和环境待准备分别处理，不误判需求外。生成、UI提取、评审共用相同扩展，重叠场景复用而不膨胀数量。
+
+新增扩展只需在references/extensions新增有边界的文档并登记读取条件，不改主数据协议。Figma不默认下载截图的规则继续有效。
 
 ## 0.4.2：Figma截图按需留存
 
@@ -78,6 +95,8 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+扩展选择的合成行为场景和试跑边界见[场景扩展行为回归](tests/extension_selection_scenarios.md)；自动结构/导出检查不能代替按真实需求复核适用风险。
 
 ## 更新
 
