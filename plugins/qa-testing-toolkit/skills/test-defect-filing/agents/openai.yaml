@@ -1,4 +1,0 @@
-interface:
-  display_name: "Test Defect Filing"
-  short_description: "提交或优化飞书项目缺陷，保留必要复现条件和真实证据，写后回读校验"
-  default_prompt: "使用 $test-defect-filing 提交或优化缺陷，使他人能理解并复现；不确定的信息先问我。"

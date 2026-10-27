@@ -1,6 +1,6 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "需求与 UI 设计分析、测试计划、常规测试用例、质量评审、Excel 导出及飞书缺陷提交工具集。",
   "author": {
     "name": "Xu Minghong",
@@ -12,7 +12,7 @@
     "test-case",
     "ui-test-design",
     "qa",
-    "defect-filing"
+    "bug-submit"
   ],
   "skills": "./skills/",
   "interface": {
@@ -30,7 +30,7 @@
       "没有 PRD，基于 Figma 或 HTML 设计稿提取测试功能并编写用例。",
       "基于需求生成可执行、可追溯的测试用例并检查格式与覆盖。",
       "评审测试用例，或将 JSON 测试用例导出为 Excel。",
-      "将已确认的问题整理为飞书项目缺陷，或优化已有缺陷的描述和证据。"
+      "使用 $test-bug-submit，查重后提交缺陷，同一问题优先补充评论并按实际状态重开。"
     ]
   }
 }

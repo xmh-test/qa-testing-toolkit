@@ -1,0 +1,4 @@
+interface:
+  display_name: "bug提交"
+  short_description: "飞书Bug查重提交、已有Bug补充与重开，保留真实证据并回读校验"
+  default_prompt: "使用 $test-bug-submit 先查重再提交缺陷；同一问题补充已有Bug，已解决或已关闭且再次复现时重开；不确定的信息先问我。"
