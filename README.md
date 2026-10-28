@@ -12,7 +12,7 @@
 | `test-case-generator` | 通用用例设计，按上下文引用场景扩展，生成或更新 JSON V3 及总结 |
 | `test-case-reviewer` | 评审用例结构、覆盖、可执行性及业务规则依据 |
 | `test-case-to-sheets` | 将测试用例 JSON 转换为本地 Excel 文件 |
-| `test-executor` | Computer Use 多平台测试执行，明确范围、保存证据、统计结果并恢复环境 |
+| `test-executor`（Beta） | Computer Use 多平台测试执行，明确范围、保存证据、统计结果并恢复环境 |
 | `test-bug-submit` | 查重后提交飞书项目缺陷，同一问题补充已有 Bug，已解决或已关闭且再次复现时重开，写后回读校验 |
 
 ## 安装
@@ -33,7 +33,9 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
-## 测试执行：test-executor
+## 0.8.0：测试执行 test-executor（Beta）
+
+**当前状态：Beta。** 测试执行技能已合并主线，仍处于试用验证阶段；脚本自动测试通过不代表真实设备端到端无人值守能力已全面验证。已验证范围及现场验证限制见[创建验收](plugins/qa-testing-toolkit/skills/test-executor/references/validation.md)。Beta 标记仅适用于 `test-executor`。
 
 新增[无人值守测试执行技能](plugins/qa-testing-toolkit/skills/test-executor/SKILL.md)，先确认用例范围与资源，再验证环境和授权，使用 Computer Use 执行已有用例、记录证据、去重缺陷并输出执行记录、Excel及测试总结。默认纳入全部常规功能用例，专项按明确范围启用；冒烟、功能、回归、兼容性及指定清单的[范围规则](plugins/qa-testing-toolkit/skills/test-executor/references/scope.md)分别定义，不以优先级代替冒烟集合。
 
