@@ -1,6 +1,6 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "需求与 UI 设计分析、测试计划、用例设计与评审、Computer Use 测试执行（Beta）、Excel 导出及飞书缺陷提交工具集。",
   "author": {
     "name": "Xu Minghong",

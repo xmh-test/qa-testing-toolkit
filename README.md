@@ -33,9 +33,17 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
+## 0.8.1：技能指令精简与 Bug 字段口径
+
+**使用提示：`test-executor`（执行用例技能）暂不要使用，等待后续验证通知；其他技能正常使用。**
+
+`test-bug-submit` 新建时按默认定义分别判断严重程度与优先级，并映射项目真实选项。影响范围必填；复现频率仅按输入提供的信息填写；运行平台由输入确认，暂不收集部署环境。本次被测版本必须提供，其他版本仅按可信信息记录。模块、分类及关联项唯一匹配时自动填写，有歧义或缺必填项时集中确认。纯体验诉求列为优化建议，缺陷预期依据不清时先确认。补充或重开已有 Bug 默认保留原等级，新证据表明影响变化时提出等级与理由，确认后调整。
+
+清理技能中的会话复盘和项目历史记录；开发验证说明移至仓库文档，执行范围、恢复和设计方法按引用集中维护。测试计划按风险和协作需要组织内容，模板独立提供，不设置行数或功能项数量建议。
+
 ## 0.8.0：测试执行 test-executor（Beta）
 
-**当前状态：Beta。** 测试执行技能已合并主线，仍处于试用验证阶段；脚本自动测试通过不代表真实设备端到端无人值守能力已全面验证。已验证范围及现场验证限制见[创建验收](plugins/qa-testing-toolkit/skills/test-executor/references/validation.md)。Beta 标记仅适用于 `test-executor`。
+**当前状态：Beta。** 测试执行技能已合并主线，仍处于试用验证阶段；脚本自动测试通过不代表真实设备端到端无人值守能力已全面验证。已验证范围及现场验证限制见[开发与验证说明](docs/test-executor-development.md)。Beta 标记仅适用于 `test-executor`。
 
 新增[无人值守测试执行技能](plugins/qa-testing-toolkit/skills/test-executor/SKILL.md)，先确认用例范围与资源，再验证环境和授权，使用 Computer Use 执行已有用例、记录证据、去重缺陷并输出执行记录、Excel及测试总结。默认纳入全部常规功能用例，专项按明确范围启用；冒烟、功能、回归、兼容性及指定清单的[范围规则](plugins/qa-testing-toolkit/skills/test-executor/references/scope.md)分别定义，不以优先级代替冒烟集合。
 
