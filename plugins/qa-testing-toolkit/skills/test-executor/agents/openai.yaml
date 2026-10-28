@@ -1,0 +1,4 @@
+interface:
+  display_name: "无人值守测试执行"
+  short_description: "通过 Computer Use 执行多平台测试，记录证据、缺陷、资源缺口与环境恢复结果"
+  default_prompt: "使用 $test-executor 分析并无人值守执行提供的全部测试用例，输出 Excel 和测试总结。"

@@ -1,6 +1,6 @@
 # QA Testing Toolkit
 
-面向中文软件测试工作流的 Codex/ChatGPT 插件集合，提供从需求分析、测试资产导出到已确认问题的缺陷整理与提交能力。
+面向中文软件测试工作流的 Codex/ChatGPT 插件集合，提供需求分析、测试资产导出、Computer Use 测试执行及已确认问题的缺陷整理与提交能力。
 
 ## 包含的 skills
 
@@ -12,6 +12,7 @@
 | `test-case-generator` | 通用用例设计，按上下文引用场景扩展，生成或更新 JSON V3 及总结 |
 | `test-case-reviewer` | 评审用例结构、覆盖、可执行性及业务规则依据 |
 | `test-case-to-sheets` | 将测试用例 JSON 转换为本地 Excel 文件 |
+| `test-executor` | Computer Use 多平台测试执行，明确范围、保存证据、统计结果并恢复环境 |
 | `test-bug-submit` | 查重后提交飞书项目缺陷，同一问题补充已有 Bug，已解决或已关闭且再次复现时重开，写后回读校验 |
 
 ## 安装
@@ -31,6 +32,16 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 安装后请新建一个 Codex 任务，让新任务加载插件中的 skills。
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
+
+## 测试执行：test-executor
+
+新增[无人值守测试执行技能](plugins/qa-testing-toolkit/skills/test-executor/SKILL.md)，先确认用例范围与资源，再验证环境和授权，使用 Computer Use 执行已有用例、记录证据、去重缺陷并输出执行记录、Excel及测试总结。默认纳入全部常规功能用例，专项按明确范围启用；冒烟、功能、回归、兼容性及指定清单的[范围规则](plugins/qa-testing-toolkit/skills/test-executor/references/scope.md)分别定义，不以优先级代替冒烟集合。
+
+本机平台优先，发现问题后复核其他目标平台；每端结果独立记录。产品问题/功能缺失导致无法继续计为阻塞，环境或授权不足计为未执行。SSH默认只读。暂停、切换任务、交还设备及结束时都恢复本轮代理等环境变更；停止辅助工具后，必须实际验证客户端正常使用。缺陷默认本地记录，外部提交和消息发送按用户授权处理。
+
+技能提供参数化HTTP故障代理和移动端、多语言、浏览器兼容性参考。代理不支持HTTPS解密或精确截断已有HTTPS下载流；工具命中与业务结果均需实际证据。执行记录协议独立于设计用例V3，不改变现有生成、评审和设计用例导出格式。
+
+调用示例：“使用 $test-executor 执行这份用例的冒烟测试，在 macOS 和 Android 上验证，暂停或结束前恢复环境并验证客户端可用。”
 
 ## 0.7.0：Bug 提交、查重与重开
 
@@ -105,11 +116,11 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ## 数据与工作流
 
-七个技能按用户任务选用，不强制跑完整链路。用例设计默认生成 JSON 明细和 Markdown 总结，内部自检不额外输出评审报告；Excel 按需导出。缺陷提交独立使用，不自动执行测试、验证问题或转换用例数据。
+八个技能按用户任务选用，不强制跑完整链路。用例设计默认生成 JSON 明细和 Markdown 总结，内部自检不额外输出评审报告；Excel 按需导出。缺陷提交独立使用，不自动执行测试、验证问题或转换用例数据。
 
 新数据使用 V3：13 个用例字段，Excel 为序号加 13 列。标题使用 `【功能分类】【场景摘要】核心操作，预期结果`，一条用例围绕一个独立验证目标。
 
-不再提供专项场景/数据集设计、关联字段、覆盖过滤及专项 Excel 列。保留旧版纯常规 V1/V2 的只读导出兼容；旧版混合资产明确报错、不静默删减。旧文件升级默认另存 V3，不覆盖历史资产。旧版输入只保留最小兼容识别逻辑。
+设计资产生成与导出不提供旧版专项场景/数据集设计、关联字段、覆盖过滤及专项 Excel 列；执行技能可按明确范围执行用户提供的专项用例，执行统计与范围筛选使用独立协议。保留旧版纯常规 V1/V2 的只读导出兼容；旧版混合资产明确报错、不静默删减。旧文件升级默认另存 V3，不覆盖历史资产。旧版输入只保留最小兼容识别逻辑。
 
 生成器、评审器、导出器共享数据校验；结构通过不代表业务覆盖完整。技能应整体安装，不能单独复制依赖共享脚本的导出器。
 
@@ -117,6 +128,7 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ```bash
 python3 -m unittest discover -s tests -v
+python3 -m unittest discover -s plugins/qa-testing-toolkit/skills/test-executor/scripts -p 'test_*.py' -v
 ```
 
 扩展选择的合成行为场景和试跑边界见[场景扩展行为回归](tests/extension_selection_scenarios.md)；自动结构/导出检查不能代替按真实需求复核适用风险。

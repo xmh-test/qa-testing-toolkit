@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "round_id": "replace-with-round-id",
+  "input": {
+    "path": "",
+    "sha256": "",
+    "requirement_baseline": ""
+  },
+  "case_ids": [
+    "CASE-001"
+  ],
+  "platforms": [
+    "local-desktop"
+  ],
+  "analysis_gate": {
+    "state": "unverified",
+    "scope_and_resource_artifact": ""
+  },
+  "environment_gate": {
+    "state": "unverified",
+    "platform_readiness": {},
+    "authorization_refs": [],
+    "baseline_artifact": "",
+    "awake_and_unlock_conditions": ""
+  },
+  "checks": [
+    {
+      "case_id": "CASE-001",
+      "platform": "local-desktop",
+      "build": "unverified",
+      "applicable": true,
+      "applicability_basis": "",
+      "assertions": [
+        {
+          "id": "A1",
+          "expected": "Replace with original case requirement",
+          "result": "not_run"
+        }
+      ],
+      "attempt_ids": [],
+      "bug_ids": [],
+      "cause": {
+        "category": "environment",
+        "details": "Environment not verified",
+        "resume_condition": "Complete both gates"
+      }
+    }
+  ],
+  "attempts": [],
+  "bugs": [],
+  "resources": [],
+  "restoration": [],
+  "round_completion": {
+    "state": "in_progress",
+    "report": "",
+    "excel": "",
+    "remaining_disclosed": false
+  },
+  "handoff": {
+    "state": "not_started",
+    "trigger": "",
+    "checkpoint": "",
+    "affected_platforms": [],
+    "configuration_restoration": [],
+    "owned_process_cleanup": [],
+    "client_checks_after_cleanup": [],
+    "residual_impact": [],
+    "verified_at": null
+  },
+  "handoff_history": [],
+  "input_case_ids": [
+    "CASE-001"
+  ],
+  "excluded_cases": [],
+  "special_test_scope": {
+    "default_enabled": false,
+    "enabled_categories": [],
+    "authorization_ref": "",
+    "classification_artifact": ""
+  },
+  "execution_scope": {
+    "requested_scopes": [
+      "functional"
+    ],
+    "combination": "union",
+    "filters": {
+      "modules": [],
+      "platforms": [],
+      "explicit_priorities": []
+    },
+    "selection_basis": [],
+    "selection_state": "pending_confirmation",
+    "confirmation_ref": ""
+  }
+}
