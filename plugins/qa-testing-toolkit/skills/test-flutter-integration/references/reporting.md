@@ -14,7 +14,7 @@
 | failed | 断言或测试执行错误，附问题分类 | 是/否 |
 | blocked | 无法完成验证，写明环境/能力/前置原因 | 只有 started=true 计入启动 |
 | interrupted | 没有完整结束事件，不能沿用旧通过 | 依据 started/否 |
-| skipped | 框架跳过且未实际验证 | 依据 started/否 |
+| skipped | 框架按测试声明跳过，测试体未运行，保留可用的跳过原因 | 否/否 |
 | not_run | 已编写但未尝试 | 否/否 |
 | not_implemented | 适用但尚未编写代码 | 否/否 |
 | not_applicable | 原始用例不适用当前平台，需依据 | 否/否 |
@@ -75,7 +75,7 @@ scripts/render_html.py 仅消费已解析且脱敏的数据，不执行用例、
 }
 ```
 
-automation_mode 使用 automated、host_assisted、manual_assisted；manual_steps 列出实际辅助动作和影响。失败、阻塞和中断必须提供 description；原始错误单独保留，不只堆日志。steps/expected 可为数组或文本。availability 还可指定 blocked、not_applicable 或 covered，notes 给原因。
+automation_mode 使用 automated、host_assisted、manual_assisted；manual_steps 列出实际辅助动作和影响。失败、阻塞和中断必须提供 description；原始错误单独保留，不只堆日志。通用 HTML 输入可将跳过原因写入 description。steps/expected 可为数组或文本。availability 还可指定 blocked、not_applicable 或 covered，notes 给原因。
 
 本地问题可直接嵌在结果的 issues，或由项目现有 defects.json/问题文件保存并链接 HTML，不强制重复生成多种格式。记录步骤、预期、实际、证据引用、分类、发现时间及实际尝试次数；缺失项明确未知。不虚构飞书 ID 或归因。
 
