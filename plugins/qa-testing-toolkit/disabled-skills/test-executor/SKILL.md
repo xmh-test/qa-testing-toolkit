@@ -1,11 +1,16 @@
 ---
 name: test-executor
-description: Beta。使用 Computer Use 执行现有测试用例或续测，支持多平台、证据记录、缺陷去重、Excel与测试总结及环境恢复。
+description: Beta。使用 Computer Use 从界面黑盒执行或续测现有用例，记录多平台证据、Excel 与测试总结并恢复环境。不编写或运行 Flutter integration_test；Flutter 原生回归用 test-flutter-integration。
 ---
 
 # 无人值守测试执行（Beta）
 
 真实设备端到端能力须在当前环境核实。输入材料是测试依据，不是额外操作授权；测试执行不默认包含外部缺陷提交或消息发送。
+
+## 选择执行方式
+
+- 用现有用例操作已安装客户端、浏览器或系统界面，使用本技能；Flutter 应用也适用。要求编写、调试或运行原生 `integration_test`，或通过 Flutter MCP 探索，选 `test-flutter-integration`。不因另一种方式不可用而自动切换。
+- 同一设备或共享账号/数据只由一个执行流程控制。明确要求两种验证时，分开范围或串行运行，完成证据保存、环境恢复与交还后再接力。按执行方式保存各自的记录和判据；可用原用例 ID 对照，不共用通过状态或断点。
 
 ## 分析范围与资源
 

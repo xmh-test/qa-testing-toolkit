@@ -52,7 +52,7 @@ TRACE_COLUMNS = [
 BASE_COLUMN_WIDTHS = [8, 44, 24, 22, 10, 18, 42, 48, 54, 18]
 TRACE_COLUMN_WIDTHS = [20, 20, 20, 16]
 PIPE_LIST_FIELDS = {"tags", "requirement_ids", "acceptance_criteria_ids"}
-PRIORITY_STYLES = {"P0": 2, "P1": 3, "P2": 4}
+PRIORITY_STYLES = {"P0": 2, "P1": 3, "P2": 4, "P3": 5}
 INVALID_XML_RE = re.compile(
     r"[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\U00010000-\U0010FFFF]",
 )

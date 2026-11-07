@@ -30,7 +30,7 @@ artifacts 仅含 summary；默认是实际总结文件名，用户只要 JSON �
 | title | string | 遵守 common_case_rules.md |
 | directory | string | 项目名\|平台分类\|模块名 |
 | tags | string[] | 平台及可选 destructive |
-| priority | string | P0 / P1 / P2 |
+| priority | string | P0 / P1 / P2 / P3，定级遵守 common_case_rules.md |
 | case_type | string | common_case_rules.md 中定义的类型 |
 | precondition | string | 连续编号，内容自包含 |
 | steps | string | 连续编号的操作 |
@@ -44,3 +44,5 @@ artifacts 仅含 summary；默认是实际总结文件名，用户只要 JSON �
 V2 仅接受 `generation_strategy=functional-point`、每条 `design_methods=["functional-point"]`、历史专项关联和 artifacts 专项引用为空。其他策略、关联或未知字段报错，不自动筛掉部分用例。历史混合资产保留原文件，由用户另行确定处理范围。
 
 旧文件更新默认另存 V3，保留旧文件；先补齐有依据的追溯、标题和编号。无法确认的映射列缺口，不虚构来源。Excel 的历史格式适配不改写输入。
+
+优先级新增 P3，不改变 V3 字段结构。新总结使用四等级统计；历史三等级总结仅在用例不含 P3 时允许校验，更新总结时改为四等级并按实际用例计数，不批量重标旧用例。

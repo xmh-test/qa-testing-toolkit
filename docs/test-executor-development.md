@@ -1,6 +1,6 @@
 # 测试执行技能开发与验证
 
-`test-executor` 为 Beta。自动验证覆盖技能结构、执行记录统计及回环 HTTP 故障代理；真实设备端到端无人值守能力仍需按目标环境验证，模拟测试不代表现场验收。
+`test-executor` 当前已禁用，源码在插件的 `disabled-skills/test-executor/`。自动验证覆盖技能结构、执行记录统计及回环 HTTP 故障代理；真实设备端到端无人值守能力仍需按目标环境验证，模拟测试不代表现场验收。
 
 ## 验证范围
 
@@ -14,7 +14,7 @@
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 -m unittest discover -s plugins/qa-testing-toolkit/skills/test-executor/scripts -p 'test_*.py' -v
+python3 -m unittest discover -s plugins/qa-testing-toolkit/disabled-skills/test-executor/scripts -p 'test_*.py' -v
 ```
 
 技能结构校验使用 skill-creator 提供的 `scripts/quick_validate.py <技能目录>`。修改脚本时验证受影响的行为，修改模板或协议时同时检查引用、统计及导出兼容。

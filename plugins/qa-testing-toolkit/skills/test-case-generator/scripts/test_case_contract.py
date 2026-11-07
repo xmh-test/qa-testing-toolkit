@@ -21,6 +21,7 @@ CASE_FIELDS = BASE_FIELDS | TRACE_FIELDS
 LEGACY_FIELDS = {"design_methods", "bdd_scenario_id", "ddt_dataset_ids", "ddt_row_id"}
 META_FIELDS = {"program", "module", "platform", "source", "generated_at", "artifacts"}
 PLATFORMS = {"web": "web", "mobile": "app", "desktop": "pc", "api": "api"}
+PRIORITIES = ("P0", "P1", "P2", "P3")
 CASE_TYPES = {"功能用例", "移动端用例", "兼容性用例", "性能用例", "安全用例", "接口用例"}
 TITLE_RE = re.compile(r"^【([^【】\[\]/\n]+)】【([^【】\[\]/\n]+)】([^【】\n]+)，([^【】\n]+)$")
 
@@ -124,7 +125,7 @@ def validate(payload) -> tuple[list[dict], str, list[str]]:
         require(bool(platform_tags) and platform_tags <= set(PLATFORMS), f"{label} 平台 tag 无效")
         require("destructive" not in tags or tags[-1] == "destructive", f"{label} destructive 必须放末尾")
         seen_platforms.update(platform_tags)
-        require(case["priority"] in ("P0", "P1", "P2"), f"{label} 优先级无效")
+        require(case["priority"] in PRIORITIES, f"{label} 优先级无效")
         parts = case["directory"].split("|")
         require(len(parts) == 3 and all(p.strip() for p in parts), f"{label} directory 必须是非空三段")
         require(case["functional_module"] == parts[2], f"{label} 模块与目录不一致")
@@ -199,8 +200,16 @@ def validate_summary(path: Path, cases: list[dict]) -> None:
     for key in ("用例总数", "最终用例数"):
         require(metrics.get(key) == str(len(cases)), f"总结 {key} 与 JSON 不一致")
     counts = Counter(case["priority"] for case in cases)
-    require(metrics.get("P0 / P1 / P2", "").replace(" ", "") ==
-            "/".join(str(counts[p]) for p in ("P0", "P1", "P2")), "总结优先级数量与 JSON 不一致")
+    priority_key = " / ".join(PRIORITIES)
+    summary_priorities = PRIORITIES
+    # Read historical three-level summaries only when no P3 case is present.
+    if priority_key not in metrics and "P0 / P1 / P2" in metrics and counts["P3"] == 0:
+        priority_key = "P0 / P1 / P2"
+        summary_priorities = PRIORITIES[:3]
+    require(metrics.get(priority_key, "").replace(" ", "") ==
+            "/".join(str(counts[p]) for p in summary_priorities), "总结优先级数量与 JSON 不一致")
+    require(not ("P0 / P1 / P2" in metrics and " / ".join(PRIORITIES) in metrics),
+            "总结不得同时包含三等级与四等级优先级统计")
 
 
 def main() -> int:

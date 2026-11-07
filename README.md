@@ -1,6 +1,6 @@
 # QA Testing Toolkit
 
-面向中文软件测试工作流的 Codex/ChatGPT 插件集合，提供需求分析、测试资产导出、Computer Use 测试执行及已确认问题的缺陷整理与提交能力。
+面向中文软件测试工作流的 Codex/ChatGPT 插件集合，提供需求分析、测试资产导出、Flutter 集成测试及已确认问题的缺陷整理与提交能力。
 
 ## 包含的 skills
 
@@ -12,8 +12,19 @@
 | `test-case-generator` | 通用用例设计，按上下文引用场景扩展，生成或更新 JSON V3 及总结 |
 | `test-case-reviewer` | 评审用例结构、覆盖、可执行性及业务规则依据 |
 | `test-case-to-sheets` | 将测试用例 JSON 转换为本地 Excel 文件 |
-| `test-executor`（Beta） | Computer Use 多平台测试执行，明确范围、保存证据、统计结果并恢复环境 |
+| `test-flutter-integration` | 在 Flutter 源码工程编写、调试和运行 `integration_test`，MCP 可选，交付原生证据与 HTML |
 | `test-bug-submit` | 查重后提交飞书项目缺陷，同一问题补充已有 Bug，已解决或已关闭且再次复现时重开，写后回读校验 |
+
+## 选择测试执行方式
+
+| 需求 | 技能 | 前提与交付 |
+| --- | --- | --- |
+| 写成可复跑的 Flutter 回归脚本，或运行已有 Dart 集成测试 | [`test-flutter-integration`](plugins/qa-testing-toolkit/skills/test-flutter-integration/SKILL.md) | 有 Flutter 源码、项目工具链和目标设备；运行 `integration_test`，保留原生日志和本地 HTML。MCP 可单独用于探索和失败定位。 |
+| 拿成品和现有用例，通过界面操作完成黑盒验证或续测 | [`test-executor`（已禁用）](plugins/qa-testing-toolkit/disabled-skills/test-executor/SKILL.md) | 通过 Computer Use 操作成品，保存执行断点、证据、Excel 和测试总结。源码保留供开发验证。 |
+
+插件只从 `skills/` 加载技能。Computer Use 执行技能保存在 `disabled-skills/test-executor/`，完成验证后可将目录移回 `skills/` 恢复加载。
+
+若 Flutter 项目已安装旧版独立 `flutter-mcp-test`，使用新版时通过 `$test-flutter-integration` 明确调用；建议只保留一个 Flutter 技能来源，避免两份规则同时被选中。
 
 ## 安装
 
@@ -35,7 +46,7 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ## 0.8.1：技能指令精简与 Bug 字段口径
 
-**使用提示：`test-executor`（执行用例技能）暂不要使用，等待后续验证通知；其他技能正常使用。**
+**`test-executor` 当前已禁用，源码保留供后续验证。**
 
 `test-bug-submit` 新建时按默认定义分别判断严重程度与优先级，并映射项目真实选项。影响范围必填；复现频率仅按输入提供的信息填写；运行平台由输入确认，暂不收集部署环境。本次被测版本必须提供，其他版本仅按可信信息记录。模块、分类及关联项唯一匹配时自动填写，有歧义或缺必填项时集中确认。纯体验诉求列为优化建议，缺陷预期依据不清时先确认。补充或重开已有 Bug 默认保留原等级，新证据表明影响变化时提出等级与理由，确认后调整。
 
@@ -43,19 +54,17 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ## 0.8.0：测试执行 test-executor（Beta）
 
-**当前状态：Beta。** 测试执行技能已合并主线，仍处于试用验证阶段；脚本自动测试通过不代表真实设备端到端无人值守能力已全面验证。已验证范围及现场验证限制见[开发与验证说明](docs/test-executor-development.md)。Beta 标记仅适用于 `test-executor`。
+该版本引入 Beta 测试执行技能。已验证范围及现场验证限制见[开发与验证说明](docs/test-executor-development.md)。
 
-新增[无人值守测试执行技能](plugins/qa-testing-toolkit/skills/test-executor/SKILL.md)，先确认用例范围与资源，再验证环境和授权，使用 Computer Use 执行已有用例、记录证据、去重缺陷并输出执行记录、Excel及测试总结。默认纳入全部常规功能用例，专项按明确范围启用；冒烟、功能、回归、兼容性及指定清单的[范围规则](plugins/qa-testing-toolkit/skills/test-executor/references/scope.md)分别定义，不以优先级代替冒烟集合。
+新增[无人值守测试执行技能](plugins/qa-testing-toolkit/disabled-skills/test-executor/SKILL.md)，先确认用例范围与资源，再验证环境和授权，使用 Computer Use 执行已有用例、记录证据、去重缺陷并输出执行记录、Excel及测试总结。默认纳入全部常规功能用例，专项按明确范围启用；冒烟、功能、回归、兼容性及指定清单的[范围规则](plugins/qa-testing-toolkit/disabled-skills/test-executor/references/scope.md)分别定义，不以优先级代替冒烟集合。
 
 本机平台优先，发现问题后复核其他目标平台；每端结果独立记录。产品问题/功能缺失导致无法继续计为阻塞，环境或授权不足计为未执行。SSH默认只读。暂停、切换任务、交还设备及结束时都恢复本轮代理等环境变更；停止辅助工具后，必须实际验证客户端正常使用。缺陷默认本地记录，外部提交和消息发送按用户授权处理。
 
 技能提供参数化HTTP故障代理和移动端、多语言、浏览器兼容性参考。代理不支持HTTPS解密或精确截断已有HTTPS下载流；工具命中与业务结果均需实际证据。执行记录协议独立于设计用例V3，不改变现有生成、评审和设计用例导出格式。
 
-调用示例：“使用 $test-executor 执行这份用例的冒烟测试，在 macOS 和 Android 上验证，暂停或结束前恢复环境并验证客户端可用。”
-
 ## 0.7.0：Bug 提交、查重与重开
 
-将 `test-defect-filing` 更名为 `test-bug-submit`，展示名称为“bug提交”。新名称用于显式调用；原名称不再保留为独立入口。该技能将已确认的问题整理为包含标题、前置条件、操作步骤、预期结果、实际结果和备注的缺陷，支持批次配置、项目与批内查重、已有 Bug 补充与重开、串行提交和写后回读校验；不负责问题验证。
+将 `test-defect-filing` 更名为 `test-bug-submit`。新名称用于显式调用；原名称不再保留为独立入口。该技能将已确认的问题整理为包含标题、前置条件、操作步骤、预期结果、实际结果和备注的缺陷，支持批次配置、项目与批内查重、已有 Bug 补充与重开、串行提交和写后回读校验；不负责问题验证。
 
 同一问题优先复用已有 Bug：活跃状态补充新增信息，已解决或已关闭且本次确认仍存在／再次出现时按项目流程重开；疑似重复先确认。创建结果不明先回查，不能因一次查询为空就自动重建。新建或重开默认指派给当前飞书项目工具授权用户，明确指定时优先遵守；仅追加评论保留原经办人。新建描述及每次补充均注明本次被测程序的平台、名称和版本，重开说明与补充证据优先写评论，保留原描述。
 
@@ -126,7 +135,7 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ## 数据与工作流
 
-八个技能按用户任务选用，不强制跑完整链路。用例设计默认生成 JSON 明细和 Markdown 总结，内部自检不额外输出评审报告；Excel 按需导出。缺陷提交独立使用，不自动执行测试、验证问题或转换用例数据。
+八个已启用的技能按用户任务选用，不强制跑完整链路。用例设计默认生成 JSON 明细和 Markdown 总结，内部自检不额外输出评审报告；Excel 按需导出。缺陷提交独立使用，不自动执行测试、验证问题或转换用例数据。
 
 新数据使用 V3：13 个用例字段，Excel 为序号加 13 列。标题使用 `【功能分类】【场景摘要】核心操作，预期结果`，一条用例围绕一个独立验证目标。
 
@@ -138,7 +147,7 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 ```bash
 python3 -m unittest discover -s tests -v
-python3 -m unittest discover -s plugins/qa-testing-toolkit/skills/test-executor/scripts -p 'test_*.py' -v
+python3 -m unittest discover -s plugins/qa-testing-toolkit/disabled-skills/test-executor/scripts -p 'test_*.py' -v
 ```
 
 扩展选择的合成行为场景和试跑边界见[场景扩展行为回归](tests/extension_selection_scenarios.md)；自动结构/导出检查不能代替按真实需求复核适用风险。

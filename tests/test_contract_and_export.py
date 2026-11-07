@@ -58,6 +58,13 @@ class ContractTests(unittest.TestCase):
     def test_valid(self):
         self.assertEqual(validate(fixture())[1], "3.0")
 
+    def test_four_priorities(self):
+        for priority in ("P0", "P1", "P2", "P3"):
+            with self.subTest(priority=priority):
+                doc = fixture()
+                doc["cases"][0]["priority"] = priority
+                self.assertEqual(validate(doc)[0][0]["priority"], priority)
+
     def test_titles_rejected(self):
         for title in ("[模块][条件]测试正常", "【新建/取消】【条件】取消，返回",
                       "【新建】【条件】创建任务", "【 】【条件】操作，结果"):
@@ -81,7 +88,7 @@ class ContractTests(unittest.TestCase):
                 validate(doc)
 
     def test_invalid_structure(self):
-        for key, value in (("priority", "P3"), ("tags", ["web", "web"]),
+        for key, value in (("priority", "P4"), ("tags", ["web", "web"]),
                            ("directory", "示例|app|文件备份"),
                            ("case_id", "TC-FP002-001"), ("requirement_ids", [])):
             with self.subTest(key=key), self.assertRaises(ValidationError):
@@ -138,7 +145,7 @@ class ContractTests(unittest.TestCase):
         template = (SKILLS / "test-case-generator/references/test_case_template.md").read_text()
         valid = (template.replace("| 用例总数 | |", "| 用例总数 | 1 |")
                  .replace("| 最终用例数 | |", "| 最终用例数 | 1 |")
-                 .replace("| P0 / P1 / P2 | |", "| P0 / P1 / P2 | 0 / 1 / 0 |"))
+                 .replace("| P0 / P1 / P2 / P3 | |", "| P0 / P1 / P2 / P3 | 0 / 1 / 0 / 0 |"))
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "summary.md"
             path.write_text(valid, encoding="utf-8")
@@ -147,11 +154,29 @@ class ContractTests(unittest.TestCase):
                 valid.replace("| 用例总数 | 1 |", "| 用例总数 | 2 |"),
                 valid.replace("## 需求缺口", "## 待确认项"),
                 valid.replace("| 指标 | 值 |", "| 名称 | 数量 |"),
-                valid.replace("0 / 1 / 0", "1 / 0 / 0"),
+                valid.replace("0 / 1 / 0 / 0", "1 / 0 / 0 / 0"),
             ):
                 path.write_text(broken, encoding="utf-8")
                 with self.assertRaises(ValidationError):
                     validate_summary(path, fixture()["cases"])
+
+    def test_p3_summary_and_historical_counts(self):
+        template = (SKILLS / "test-case-generator/references/test_case_template.md").read_text()
+        summary = (template.replace("| 用例总数 | |", "| 用例总数 | 1 |")
+                   .replace("| 最终用例数 | |", "| 最终用例数 | 1 |")
+                   .replace("| P0 / P1 / P2 / P3 | |", "| P0 / P1 / P2 / P3 | 0 / 0 / 0 / 1 |"))
+        doc = fixture()
+        doc["cases"][0]["priority"] = "P3"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "summary.md"
+            path.write_text(summary, encoding="utf-8")
+            validate_summary(path, doc["cases"])
+            historical = summary.replace("| P0 / P1 / P2 / P3 | 0 / 0 / 0 / 1 |",
+                                         "| P0 / P1 / P2 | 0 / 1 / 0 |")
+            path.write_text(historical, encoding="utf-8")
+            with self.assertRaises(ValidationError):
+                validate_summary(path, doc["cases"])
+            validate_summary(path, fixture()["cases"])
 
 
 class ExportTests(unittest.TestCase):
@@ -176,6 +201,23 @@ class ExportTests(unittest.TestCase):
     def test_v3_and_v2_roundtrip(self):
         for doc in (fixture(), legacy()):
             self.run_export(doc)
+
+    def test_p3_roundtrip_and_style(self):
+        doc = fixture()
+        doc["cases"][0]["priority"] = "P3"
+        self.run_export(doc)
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "p3.xlsx"
+            exporter.write_xlsx(doc["cases"], target, "测试用例", with_trace=True)
+            ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+            with zipfile.ZipFile(target) as archive:
+                sheet = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+                styles = ET.fromstring(archive.read("xl/styles.xml"))
+            cell = sheet.find('.//s:c[@r="E2"]', ns)
+            self.assertEqual("".join(cell.itertext()), "P3")
+            style = styles.find("s:cellXfs", ns)[int(cell.attrib["s"])]
+            fill = styles.find("s:fills", ns)[int(style.attrib["fillId"])]
+            self.assertEqual(fill.find("s:patternFill/s:fgColor", ns).attrib["rgb"], "FFE7E6E6")
 
     def test_v1_roundtrip(self):
         doc = fixture()["cases"]
