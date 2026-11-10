@@ -1,11 +1,11 @@
 ---
 name: test-flutter-integration
-description: 在有 Flutter 源码和构建环境时编写、调试或运行 integration_test 真机验收与回归，输出原生运行证据及本地 HTML。Flutter MCP 可选，仅用于探索和定位。
+description: 在有 Flutter 源码和构建环境时编写、调试或运行 macOS、Windows、Android 和 iOS 的 integration_test 验收与回归，输出原生运行证据及本地 HTML。Flutter MCP 可选，仅用于探索和定位。
 metadata:
   upstream: https://github.com/flutter/agent-plugins/blob/main/skills/flutter-add-integration-test/SKILL.md
 ---
 
-# Flutter 真实设备验收
+# Flutter 多平台验收
 
 以可复用的 `integration_test` 为主要交付和执行方式。MCP 是探索页面、验证定位和调查失败的可选工具，不要求每条用例先用 MCP 执行，也不因 MCP 不可用阻塞能独立运行的测试。
 
@@ -25,7 +25,7 @@ metadata:
 
 ## 编写与运行
 
-按 [集成测试指南](references/integration-test-guidance.md) 选择启动方式，修改应用源码前读取 [代码改动规则](references/code-change-policy.md)。
+按 [集成测试指南](references/integration-test-guidance.md) 核对平台入口、宿主工具链和目标设备，修改应用源码前读取 [代码改动规则](references/code-change-policy.md)。按实际执行目标报告结果，iOS 真机与模拟器分别记录。
 
 1. 优先复用项目已有的启动、登录、夹具、截图和批次运行器，避免在技能中复制项目业务注册表。
 2. 使用 `integration_test`、`WidgetTester` 和真实客户端启动流程，测试名称包含稳定用例 ID；独立建立前置条件、定位、业务断言、有界等待及清理。
