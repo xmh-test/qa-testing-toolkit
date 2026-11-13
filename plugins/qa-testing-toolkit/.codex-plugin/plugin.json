@@ -1,6 +1,6 @@
 {
   "name": "qa-testing-toolkit",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "需求与 UI 分析、测试计划、用例设计与评审、Flutter 原生集成测试、Excel 导出及飞书缺陷提交。",
   "author": {
     "name": "Xu Minghong",

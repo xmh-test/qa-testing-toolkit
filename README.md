@@ -44,7 +44,11 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
-## 最新变更：Agent Case Manager 接入
+## 0.9.0：Flutter 集成测试与 Agent Case Manager 接入
+
+新增 `test-flutter-integration`，支持编写与运行 Flutter 真机集成测试、按需 MCP 排错及本地 HTML 报告。Computer Use 技能 `test-executor` 保留在 `disabled-skills/`，暂停加载；技能界面使用统一的调用名。
+
+测试用例优先级扩展为 P0～P3，同步数据校验、总结统计和 Excel 配色，兼容不含 P3 的历史三等级总结。
 
 `test-case-generator` 默认维护模块的一套当前 JSON 和关联总结，使用稳定文件名并沿用已确认的输出目标。多个候选批次需要明确映射，按用户要求支持另存、归档和分批。
 
