@@ -44,6 +44,16 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
+## 最新变更：Agent Case Manager 接入
+
+`test-case-generator` 默认维护模块的一套当前 JSON 和关联总结，使用稳定文件名并沿用已确认的输出目标。多个候选批次需要明确映射，按用户要求支持另存、归档和分批。
+
+保持 V3 协议及项目、模块、平台身份，明确实际总结引用和真实需求来源。新增可选只读关联检查，覆盖缺失文件、歧义、越界、符号链接和实际总结不匹配，支持在普通本地目录运行。
+
+Git 接入和评审反馈分别提供独立的按需文档，覆盖输入/反馈分支配置、文件映射、目标版本核对和意见处理。普通生成与更新默认在本地完成，提交和推送按用户明确要求执行。
+
+验证通过 29 项数据、导出和关联文件回归测试，以及技能结构校验。
+
 ## 0.8.1：技能指令精简与 Bug 字段口径
 
 **`test-executor` 当前已禁用，源码保留供后续验证。**
@@ -136,6 +146,10 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 ## 数据与工作流
 
 八个已启用的技能按用户任务选用，不强制跑完整链路。用例设计默认生成 JSON 明细和 Markdown 总结，内部自检不额外输出评审报告；Excel 按需导出。缺陷提交独立使用，不自动执行测试、验证问题或转换用例数据。
+
+同一模块默认维护一套当前用例产物，使用稳定文件名并沿用已确认的 JSON 和关联总结。已有多个候选批次时先确认目标，另存、归档或分批按用户明确要求处理。
+
+生成与更新默认在本地完成。接入 Agent Case Manager 或用户要求 Git 操作时，按需读取 [Git 与项目接入](plugins/qa-testing-toolkit/skills/test-case-generator/references/git-integration.md)；处理系统评审意见时另读 [评审反馈处理](plugins/qa-testing-toolkit/skills/test-case-generator/references/review-feedback.md)。关联文件可使用 `test-case-generator/scripts/check_case_links.py <JSON> --root <内容根目录>` 检查。
 
 新数据使用 V3：13 个用例字段，Excel 为序号加 13 列。标题使用 `【功能分类】【场景摘要】核心操作，预期结果`，一条用例围绕一个独立验证目标。
 
