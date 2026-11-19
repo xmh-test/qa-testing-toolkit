@@ -9,6 +9,8 @@ metadata:
 
 以可复用的 `integration_test` 为主要交付和执行方式。MCP 是探索页面、验证定位和调查失败的可选工具，不要求每条用例先用 MCP 执行，也不因 MCP 不可用阻塞能独立运行的测试。
 
+技能以编写、调试和验证 Flutter 测试代码为核心。用例清单、执行入口和报告沿用目标项目的约定。外部测试平台的执行器、用例映射、任务调度和结果回传由平台维护。
+
 ## 选择执行方式
 
 - 要编写、修复或运行 Flutter `integration_test`，或明确要求用 Flutter MCP 探索和定位，选本技能。只要求 MCP 探索时交付观察与定位结果，不自动编写测试或登记正式通过。
@@ -28,7 +30,7 @@ metadata:
 按 [集成测试指南](references/integration-test-guidance.md) 核对平台入口、宿主工具链和目标设备，修改应用源码前读取 [代码改动规则](references/code-change-policy.md)。按实际执行目标报告结果，iOS 真机与模拟器分别记录。
 
 1. 优先复用项目已有的启动、登录、夹具、截图和批次运行器，避免在技能中复制项目业务注册表。
-2. 使用 `integration_test`、`WidgetTester` 和真实客户端启动流程，测试名称包含稳定用例 ID；独立建立前置条件、定位、业务断言、有界等待及清理。
+2. 使用 `integration_test`、`WidgetTester` 和真实客户端启动流程，测试名称包含稳定用例 ID；独立建立前置条件、定位、有界等待及清理。按[业务断言规则](references/integration-test-guidance.md#等待和业务断言)为关键断言填写中文 `reason`。
 3. 测试必要的前后置优先由测试代码自动完成，例如用 `setUp`、`tearDown`、`addTearDown` 或用例内 `try/finally` 管理账号、数据和环境状态。需要跨进程、跨批次共享的夹具，由运行器统一编排准备与清理。详见 [前后置生命周期](references/integration-test-guidance.md#前后置生命周期)。
 4. API 可以准备数据、回读结果和清理自有夹具；被测创建、上传、复制、删除等动作通过真实 UI 执行。API 操作不能冒充 UI 验证。
 5. 对新页面、定位不明或运行失败的路径，按需启用独立 MCP Debug 会话探索；修改定位后通过原生测试复跑。MCP 与集成测试使用不同 Binding，不混用。
@@ -52,6 +54,8 @@ Flutter 控件范围外的安装确认、系统权限、文件选择器、Finder
 用户明确要求提交远端时，才按 [飞书缺陷流程](references/feishu-defects.md) 及其可用技能执行；远端权限或字段缺失不阻塞本地测试与报告。仅有失败结果或“完成测试”的请求不构成远端提交授权。
 
 ## HTML 报告与状态
+
+需要按业务预期核对自动化覆盖时，遵循[逐项断言与原生证据规则](references/assertion-evidence.md)，在报告中分别列出失败断言和未执行的预期。
 
 优先使用目标项目现有 HTML 生成器，并选择独立结果目录（例如 `reports/acceptance/<批次>`）；按项目配置显式选择设备。按平台保存原生 Flutter JSONL、可读日志、失败截图、用例快照和每次尝试，HTML 展示每端每例的最新结果并保留重跑历史。
 

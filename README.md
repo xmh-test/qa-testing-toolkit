@@ -44,6 +44,15 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
+## 0.9.1 · Flutter 逐项断言与原生证据
+
+- **失败原因直接可读。** 给关键 `expect` 和 `expectLater` 添加中文 `reason`，写明触发条件、业务对象和预期结果。补充说明时保留原有断言条件和通过标准。报告摘要显示失败的业务预期及 Flutter 原生的 `Expected` 和 `Actual`，详情保留源码位置和脱敏堆栈。
+- **覆盖按业务预期核对。** 为独立检查分配稳定的断言 ID，并关联到具体用例和目标平台。复合预期拆成必要检查，从本次原生运行中确认哪些断言执行、通过或失败。报告分别列出失败断言、提前失败后未执行的预期、尚未关联断言的预期和证据不足的项目。
+- **重试和历史按当次证据展示。** 断言事件与原生测试实例关联，不同用例、平台和尝试独立统计。预期、关联实现或实质性映射变更后重新核对，历史记录使用当次冻结的解释。
+- **明确插件职责。** Flutter 技能负责脚本编写、调试、运行验证和原生证据。外部测试平台的执行器负责用例映射、调度和结果回传。
+
+验证通过 57 项仓库回归测试及 Flutter 技能结构校验。详细规则见[逐项断言与原生证据](plugins/qa-testing-toolkit/skills/test-flutter-integration/references/assertion-evidence.md)。
+
 ## 0.9.0：Flutter 集成测试与 Agent Case Manager 接入
 
 新增 `test-flutter-integration`，支持编写与运行 Flutter 真机集成测试、按需 MCP 排错及本地 HTML 报告。Computer Use 技能 `test-executor` 保留在 `disabled-skills/`，暂停加载；技能界面使用统一的调用名。

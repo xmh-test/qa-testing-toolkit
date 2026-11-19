@@ -8,6 +8,8 @@
 
 ## 状态与统计口径
 
+需要按业务预期核对自动化覆盖时，遵循[逐项断言与原生证据规则](assertion-evidence.md)，在报告中分别列出失败断言和未执行的预期。
+
 | 状态 | 含义 | 计入实际启动/通过 |
 | --- | --- | --- |
 | passed | 完成预定自动断言及必要清理 | 是/是，人工辅助另标 |
@@ -76,6 +78,8 @@ scripts/render_html.py 仅消费已解析且脱敏的数据，不执行用例、
 ```
 
 automation_mode 使用 automated、host_assisted、manual_assisted；manual_steps 列出实际辅助动作和影响。失败、阻塞和中断必须提供 description；原始错误单独保留，不只堆日志。通用 HTML 输入可将跳过原因写入 description。steps/expected 可为数组或文本。availability 还可指定 blocked、not_applicable 或 covered，notes 给原因。
+
+断言失败时，保留 Flutter 原生错误中的中文 `reason`、`Expected` 和 `Actual`。生成本地报告时，在失败摘要中显示具体业务预期和实际结果，详情保留可用的源码位置和脱敏后的原始错误与堆栈。历史记录缺少 `reason` 时，依据当时的错误和用例预期描述差异。无法确定失败业务项时标为待定位。
 
 本地问题可直接嵌在结果的 issues，或由项目现有 defects.json/问题文件保存并链接 HTML，不强制重复生成多种格式。记录步骤、预期、实际、证据引用、分类、发现时间及实际尝试次数；缺失项明确未知。不虚构飞书 ID 或归因。
 
