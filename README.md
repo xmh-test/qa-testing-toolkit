@@ -44,6 +44,12 @@ codex plugin add qa-testing-toolkit@qa-testing-toolkit
 
 建议只保留一种技能来源；若工作区还有同名独立技能，应同步更新或移除旧副本，避免加载不同规范。
 
+## 0.9.2：从 Flutter 测试源码发现用例和断言
+
+- `test-flutter-integration` 增加 [测试平台源码关联规则](plugins/qa-testing-toolkit/skills/test-flutter-integration/references/platform-source-mapping.md)。在接入 `flutter_source` 的项目中，使用 `acm-case-<case_id>` 标签把 Flutter 测试代码关联到 JSON 测试用例。
+- 用 `acmCheck` 引用 JSON 用例里稳定的预期结果 ID。执行器扫描生成清单，平台根据实际 Flutter 事件显示每项断言通过、失败或未执行。
+- 项目可从扫描结果导出记录。测试代码新增、改名或删除后重新扫描即可更新清单。
+
 ## 0.9.1 · Flutter 逐项断言与原生证据
 
 - **失败原因直接可读。** 给关键 `expect` 和 `expectLater` 添加中文 `reason`，写明触发条件、业务对象和预期结果。补充说明时保留原有断言条件和通过标准。报告摘要显示失败的业务预期及 Flutter 原生的 `Expected` 和 `Actual`，详情保留源码位置和脱敏堆栈。
